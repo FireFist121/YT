@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ðŸŽ¥ YouTube Downloader</h1>
+        <p class="subtitle">Download your favorite videos in MP4 or MP3 format</p>
+
+        <div class="input-group">
+            <label for="videoUrl">YouTube Video URL</label>
+            <input type="text" id="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="customTime">
+            <label for="customTime">Trim video (select custom time range)</label>
+        </div>
+
+        <div class="time-inputs" id="timeInputs" style="display: none;">
+            <div class="time-group">
+                <label>Start Time (HH:MM:SS)</label>
+                <div class="time-input-wrapper">
+                    <input type="number" id="startHour" min="0" max="23" value="0" placeholder="00">
+                    <span>:</span>
+                    <input type="number" id="startMin" min="0" max="59" value="0" placeholder="00">
+                    <span>:</span>
+                    <input type="number" id="startSec" min="0" max="59" value="0" placeholder="00">
+                </div>
+            </div>
+
+            <div class="time-group">
+                <label>End Time (HH:MM:SS)</label>
+                <div class="time-input-wrapper">
+                    <input type="number" id="endHour" min="0" max="23" value="0" placeholder="00">
+                    <span>:</span>
+                    <input type="number" id="endMin" min="0" max="59" value="1" placeholder="00">
+                    <span>:</span>
+                    <input type="number" id="endSec" min="0" max="59" value="0" placeholder="00">
+                </div>
+            </div>
+        </div>
+
+        <div class="options">
+            <div class="option-group">
+                <label for="quality">Quality</label>
+                <select id="quality">
+                    <option value="highest">Highest Available</option>
+                    <option value="1080p">1080p (Full HD)</option>
+                    <option value="720p">720p (HD)</option>
+                    <option value="480p" selected>480p (SD)</option>
+                    <option value="360p">360p</option>
+                </select>
+            </div>
+
+            <div class="option-group">
+                <label for="format">Format</label>
+                <select id="format">
+                    <option value="mp4">MP4 (Video)</option>
+                    <option value="mp3">MP3 (Audio Only)</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="download-btn" onclick="downloadVideo()">
+            <span id="btnText">Download</span>
+        </button>
+
+        <div id="status" class="status"></div>
+
+        <div class="info-box">
+            <h3>â„¹ï¸ How to use:</h3>
+            <ol>
+                <li>Copy a YouTube video URL</li>
+                <li>Paste it in the input field above</li>
+                <li>Optionally select a custom time range to trim</li>
+                <li>Select your preferred quality and format</li>
+                <li>Click the Download button</li>
+            </ol>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
