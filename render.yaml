@@ -1,21 +1,7 @@
-# render.yaml - Place this in your project root
 services:
   - type: web
     name: youtube-downloader
-    env: node
+    env: docker
     region: oregon
     plan: free
-    buildCommand: |
-      npm install
-      # Install yt-dlp
-      curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /opt/render/project/src/yt-dlp
-      chmod a+rx /opt/render/project/src/yt-dlp
-      # Install ffmpeg
-      apt-get update && apt-get install -y ffmpeg || echo "FFmpeg install attempted"
-    startCommand: node server.js
     healthCheckPath: /health
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PATH
-        value: /opt/render/project/src:/usr/local/bin:/usr/bin:/bin

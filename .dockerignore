@@ -1,0 +1,7 @@
+node_modules
+downloads
+.git
+.env
+.gitignore
+README.md
+yt-dlp

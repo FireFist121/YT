@@ -1,4 +1,26 @@
+# Dependencies
 node_modules/
-   downloads/
-   .env
-   yt-dlp
+package-lock.json
+
+# Downloads folder
+downloads/
+
+# Environment variables
+.env
+.env.local
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Binaries
+yt-dlp
+yt-dlp.exe
+
+# Logs
+*.log
+npm-debug.log*

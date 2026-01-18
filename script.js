@@ -43,7 +43,23 @@ function downloadVideo() {
     downloadBtn.disabled = true;
     btnText.textContent = 'Processing...';
 
-    const downloadUrl = 'http://localhost:3000/download?url=' + encodeURIComponent(videoUrl) + '&format=' + format;
+    // Build download URL - use relative path so it works on any domain
+    let downloadUrl = '/download?url=' + encodeURIComponent(videoUrl) + '&format=' + format + '&quality=' + quality;
+    
+    // Add time trimming parameters if enabled
+    if (customTime) {
+        const startHour = document.getElementById('startHour').value.padStart(2, '0');
+        const startMin = document.getElementById('startMin').value.padStart(2, '0');
+        const startSec = document.getElementById('startSec').value.padStart(2, '0');
+        const endHour = document.getElementById('endHour').value.padStart(2, '0');
+        const endMin = document.getElementById('endMin').value.padStart(2, '0');
+        const endSec = document.getElementById('endSec').value.padStart(2, '0');
+        
+        const startTime = startHour + ':' + startMin + ':' + startSec;
+        const endTime = endHour + ':' + endMin + ':' + endSec;
+        
+        downloadUrl += '&startTime=' + encodeURIComponent(startTime) + '&endTime=' + encodeURIComponent(endTime);
+    }
     
     showStatus('Starting download...', 'info');
     
