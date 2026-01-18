@@ -9,7 +9,6 @@ app.use(cors());
 app.use(express.static('.'));
 app.use(express.json());
 
-// Use /tmp for Render.com (they provide writable /tmp directory)
 const DOWNLOADS_DIR = process.env.NODE_ENV === 'production' 
     ? '/tmp/downloads' 
     : path.join(__dirname, 'downloads');
@@ -18,10 +17,7 @@ if (!fs.existsSync(DOWNLOADS_DIR)) {
     fs.mkdirSync(DOWNLOADS_DIR, { recursive: true });
 }
 
-// Cleanup old files on startup
 cleanupOldFiles();
-
-// Periodic cleanup every 5 minutes
 setInterval(cleanupOldFiles, 5 * 60 * 1000);
 
 function cleanupOldFiles() {
@@ -33,14 +29,11 @@ function cleanupOldFiles() {
             const filePath = path.join(DOWNLOADS_DIR, file);
             try {
                 const stats = fs.statSync(filePath);
-                // Delete files older than 5 minutes
                 if (now - stats.mtimeMs > 5 * 60 * 1000) {
                     fs.unlinkSync(filePath);
                     cleaned++;
                 }
-            } catch (e) {
-                // File might have been deleted already
-            }
+            } catch (e) {}
         });
         if (cleaned > 0) {
             console.log(`Cleaned up ${cleaned} old file(s)`);
@@ -50,7 +43,6 @@ function cleanupOldFiles() {
     }
 }
 
-// Use local yt-dlp if available (for Render)
 const YT_DLP = fs.existsSync('./yt-dlp') ? './yt-dlp' : 'yt-dlp';
 
 app.get('/download', async (req, res) => {
@@ -77,10 +69,18 @@ app.get('/download', async (req, res) => {
         let command;
         
         if (format === 'mp3') {
-            command = `${YT_DLP} -x --audio-format mp3 --audio-quality 0 -o "${tempFile}.%(ext)s" "${videoUrl}"`;
+            command = `${YT_DLP} -x --audio-format mp3 --audio-quality 0 --add-header "User-Agent:Mozilla/5.0" -o "${tempFile}.%(ext)s" "${videoUrl}"`;
         } else {
-            const qualityNum = quality.replace('p', '');
-            command = `${YT_DLP} -f "bestvideo[height<=${qualityNum}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${qualityNum}]" --merge-output-format mp4 -o "${tempFile}.%(ext)s" "${videoUrl}"`;
+            // Fix: Handle "highest" quality properly
+            let formatString;
+            if (quality === 'highest') {
+                formatString = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
+            } else {
+                const qualityNum = quality.replace('p', '');
+                formatString = `bestvideo[height<=${qualityNum}][ext=mp4]+bestaudio[ext=m4a]/best[height<=${qualityNum}]`;
+            }
+            
+            command = `${YT_DLP} -f "${formatString}" --merge-output-format mp4 --add-header "User-Agent:Mozilla/5.0" -o "${tempFile}.%(ext)s" "${videoUrl}"`;
         }
 
         console.log(`Processing download for video: ${videoId}`);
@@ -88,7 +88,8 @@ app.get('/download', async (req, res) => {
         exec(command, { maxBuffer: 1024 * 1024 * 100, timeout: 300000 }, (error, stdout, stderr) => {
             if (error) {
                 console.error('Download error:', error.message);
-                return res.status(500).json({ error: 'Download failed. Please try again.' });
+                console.error('stderr:', stderr);
+                return res.status(500).json({ error: 'Download failed. YouTube may be blocking the request.' });
             }
 
             const files = fs.readdirSync(DOWNLOADS_DIR).filter(f => f.startsWith(timestamp.toString() + '_temp'));
@@ -143,7 +144,6 @@ function sendFileAndCleanup(res, filePath, fileName) {
         if (err) {
             console.error('Download send error:', err);
         }
-        // Cleanup after 3 seconds
         setTimeout(() => {
             try { 
                 if (fs.existsSync(filePath)) {
@@ -170,7 +170,6 @@ function extractVideoId(url) {
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
-// Health check endpoint for Render
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'ok', 
@@ -184,7 +183,6 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     
-    // Check if binaries are available
     exec(`${YT_DLP} --version`, (err, out) => {
         if (!err) {
             console.log('✓ yt-dlp:', out.trim());
